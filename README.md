@@ -17,7 +17,7 @@ Follow these steps to set up the app. Ensure you have Git installed:
     ```sh
     git clone https://github.com/sundayezeilo/pismo
     cd pismo
-    git checkout feat/account-and-txns
+    git checkout develop
     ```
 
 2. **Install Dependencies**:
