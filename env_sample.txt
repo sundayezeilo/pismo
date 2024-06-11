@@ -1,0 +1,4 @@
+SERVER_PORT=
+POSTGRES_URL=postgres://user:postgres@localhost:5432/pismo?sslmode=disable
+WRITE_TIMEOUT=
+READ_TIMEOUT=

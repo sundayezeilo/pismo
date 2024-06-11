@@ -1,0 +1,226 @@
+openapi: 3.0.2
+info:
+  title: Pismo API
+  version: 1.0.0
+  description: Account Transactions API
+servers:
+  - url: http://localhost:8000
+    description: Development
+paths:
+  /accounts:
+    post:
+      tags:
+        - Account
+      summary: Creates a new account with the supplied document number.
+      description: Creates a new account with the supplied document number.
+      operationId: create-account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document_number:
+                  type: string
+                  description: Unique document number required to create an account.
+              required:
+                - document_number
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account_id:
+                    type: integer
+                    description: Unique account ID assigned to the new account.
+                  document_number:
+                    type: string
+                    description: Unique document number used associated with the new account.
+        "400":
+          description: Bad request. Returned on request validation failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: An array that optionally contains a list of error fields.
+        
+        "409":
+          description: Duplicate operation. Returned if an account already exists with the supplied document number.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: An array that optionally contains an error fields.
+        "500":
+          description: Internal server error. Returned when an unforseen error has occured on our server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure. This is usually unknown at the time of response.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: This is usually an empty array.
+
+  /accounts/{accountId}:
+    get:
+      tags:
+        - Account
+      summary: Retrieves a specific account with the supplied account ID.
+      description: Retrieves a specific account with the supplied account ID.
+      operationId: fetch-account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique account ID.
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account_id:
+                    type: integer
+                    description: Unique account ID.
+                  document_number:
+                    type: string
+                    description: Unique document number used associated with an account.
+        "404":
+          description: Account Not found 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: An array that optionally contains a list of error fields.
+        "500":
+          description: Internal server error. Returned when an unforseen error has occured on our server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure. This is usually unknown at the time of response.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: This is usually an empty array.
+
+  /transactions:
+    post:
+      tags:
+        - Transaction
+      summary: Creates a new Transaction
+      description: Creates a new account with the supplied payload
+      operationId: create-transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_id:
+                  type: integer
+                  description: A valid account number to be associated with a new transaction.
+                operation_type_id:
+                  type: integer
+                  description: A valid operation type for the given transaction.
+                amount:
+                  type: number
+                  format: double
+                  description: Transaction amount.
+              required:
+                - account_id
+                - operation_type_id
+                - amount
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account_id:
+                    type: integer
+                    description: A valid account number for the new transaction.
+                  operation_type_id:
+                    type: integer
+                    description: A valid operation type for the new transaction.
+                  amount:
+                    type: number
+                    format: double
+                    description: Transaction amount.
+        "400":
+          description: Bad request. Returned on request validation failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: An array that optionally contains a list of error fields.
+        "500":
+          description: Internal server error. Returned when an unforseen error has occured on our server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    description: A text that describes the reason for failure. This is usually unknown at the time of response.
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    description: This is usually an empty array.
+
+tags: []
