@@ -17,6 +17,7 @@ Follow these steps to set up the app. Ensure you have Git installed:
     ```sh
     git clone https://github.com/sundayezeilo/pismo
     cd pismo
+    git checkout feat/account-and-txns
     ```
 
 2. **Install Dependencies**:
@@ -27,7 +28,7 @@ Follow these steps to set up the app. Ensure you have Git installed:
 
 ## Configuration
 
-1. **Set Up Environment Variables**:
+2. **Set Up Environment Variables**:
 
     Environment variables are required for running the app. Refer to `env_sample.txt` in the root directory for a sample configuration. Create the `.env` file in the appropriate directory:
 
@@ -89,3 +90,5 @@ The API provides the following endpoints:
 - `POST /accounts` - Creates a new account.
 - `GET /accounts/:accountId` - Retrieves a specific account by ID (accountId).
 - `POST /transactions` - Creates a new transaction.
+
+See complete [API Reference for integration guide]()
