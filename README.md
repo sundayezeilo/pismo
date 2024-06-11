@@ -91,4 +91,4 @@ The API provides the following endpoints:
 - `GET /accounts/:accountId` - Retrieves a specific account by ID (accountId).
 - `POST /transactions` - Creates a new transaction.
 
-See complete [API Reference for integration guide]()
+See complete [API Reference for integration guide](https://pismo.readme.io/reference/create-account)
