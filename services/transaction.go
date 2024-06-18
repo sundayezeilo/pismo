@@ -14,7 +14,7 @@ import (
 )
 
 type TransactionService interface {
-	CreateTransaction(context.Context, *dto.CreateTxnParams) (*models.Transaction, error)
+	CreateTransaction(context.Context, *dto.CreateTxnParams) (*dto.CreateTransaction, error)
 	GetTransactionByID(context.Context, int) (*models.Transaction, error)
 }
 
@@ -28,18 +28,31 @@ func NewTransactionService(repo repositories.TxnRepository, accService AccountSe
 	return &transactionService{repo, accService, opTypeService}
 }
 
-func (srv *transactionService) CreateTransaction(ctx context.Context, txnParams *dto.CreateTxnParams) (*models.Transaction, error) {
+func (srv *transactionService) CreateTransaction(ctx context.Context, txnParams *dto.CreateTxnParams) (*dto.CreateTransaction, error) {
 	if err := srv.validateTransaction(ctx, txnParams); err != nil {
 		return nil, apierrors.ErrBadRequest.WithMessage(err.Error())
 	}
-	opType := &models.OperationType{}
+	var opType *models.OperationType
 
-	if _, err := srv.validateOpTypes(ctx, txnParams.OpTypeID); err != nil {
+	opType, err := srv.validateOpTypes(ctx, txnParams.OpTypeID)
+
+	if err != nil {
 		return nil, apierrors.ErrBadRequest.WithMessage("invalid operation type")
 	}
 
-	newTxn := &models.Transaction{AccountID: txnParams.AccountID, OpTypeID: txnParams.OpTypeID, Amount: txnParams.Amount * float64(srv.getTxnType(opType.OpType))}
-	err := srv.repo.CreateTransaction(ctx, newTxn)
+	usrAcc, err := srv.accService.GetAccountByID(ctx, txnParams.AccountID)
+	if err != nil {
+		slog.Log(ctx, slog.LevelError, "error creating transaction: "+err.Error())
+		return nil, apierrors.ErrInternalServerError.WithMessage("error creating transaction")
+	}
+
+	if usrAcc.CreditLimit < txnParams.Amount && opType.OpType != constants.Credit {
+		slog.Log(ctx, slog.LevelError, "insufficient credit")
+		return nil, apierrors.ErrBadRequest.WithMessage("insufficient credit")
+	}
+
+	newTxn := &dto.CreateTransaction{AccountID: txnParams.AccountID, OpTypeID: txnParams.OpTypeID, Amount: txnParams.Amount * float64(srv.getTxnType(opType.OpType))}
+	err = srv.repo.CreateTransaction(ctx, newTxn)
 
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "error creating transaction: "+err.Error())

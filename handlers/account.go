@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"log/slog"
@@ -37,25 +36,30 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
-	acc, err := h.Service.CreateAccount(ctx, params)
+	acc, err := h.Service.CreateAccount(r.Context(), params)
 	if err != nil {
 		if apiErr, ok := err.(*apierrors.APIError); ok {
 			apiErr.WriteJSON(w)
 		} else {
-			slog.Log(ctx, slog.LevelError, "Error creating new account")
+			slog.Log(r.Context(), slog.LevelError, "Error creating new account")
 			apierrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
 		}
 		return
 	}
 
-	accountResponse := dto.CreateGetAccountResponse{
+	newAcc := dto.CreateGetAccountResponse{
 		AccountID:      acc.ID,
 		DocumentNumber: acc.DocumentNumber,
 	}
 
+	resp := dto.SuccessResponse{
+		Status:  true,
+		Message: "account successfully created",
+		Data:    newAcc,
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(accountResponse)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
@@ -68,18 +72,24 @@ func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
-	account, err := h.Service.GetAccountByID(ctx, accID)
+	account, err := h.Service.GetAccountByID(r.Context(), accID)
 
 	if err != nil {
 		apierrors.ErrNotFound.WithMessage("account not found").WriteJSON(w)
 		return
 	}
 
-	accountResponse := dto.CreateGetAccountResponse{
+	acc := dto.CreateGetAccountResponse{
 		AccountID:      account.ID,
 		DocumentNumber: account.DocumentNumber,
+		CreditLimit:    account.CreditLimit,
+	}
+
+	resp := dto.SuccessResponse{
+		Status:  true,
+		Message: "account successfully retrieved",
+		Data:    acc,
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(accountResponse)
+	json.NewEncoder(w).Encode(resp)
 }

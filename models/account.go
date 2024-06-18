@@ -7,4 +7,5 @@ type Account struct {
 	DocumentNumber string    `json:"document_number"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
+	CreditLimit    float64   `json:"credit_limit"`
 }

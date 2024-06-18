@@ -5,6 +5,7 @@ type CreateAccountParams struct {
 }
 
 type CreateGetAccountResponse struct {
-	AccountID      int    `json:"account_id"`
-	DocumentNumber string `json:"document_number"`
+	AccountID      int     `json:"account_id"`
+	DocumentNumber string  `json:"document_number"`
+	CreditLimit    float64 `json:"credit_limit"`
 }

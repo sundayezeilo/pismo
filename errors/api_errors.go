@@ -3,6 +3,8 @@ package apierrors
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/sundayezeilo/pismo/dto"
 )
 
 type APIError struct {
@@ -40,9 +42,14 @@ func (e *APIError) Error() string {
 }
 
 func (e *APIError) WriteJSON(w http.ResponseWriter) {
+	resp := dto.ErrorResponse{
+		Status:  false,
+		Message: e.Message,
+		Errors:  e.Errors,
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(e.Code)
-	json.NewEncoder(w).Encode(e)
+	json.NewEncoder(w).Encode(resp)
 }
 
 var (
