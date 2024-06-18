@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"math"
 
+	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/constants"
 	"github.com/sundayezeilo/pismo/dto"
-	apierrors "github.com/sundayezeilo/pismo/errors"
 	"github.com/sundayezeilo/pismo/models"
 	"github.com/sundayezeilo/pismo/repositories"
 )
@@ -30,25 +30,25 @@ func NewTransactionService(repo repositories.TxnRepository, accService AccountSe
 
 func (srv *transactionService) CreateTransaction(ctx context.Context, txnParams *dto.CreateTxnParams) (*dto.CreateTransaction, error) {
 	if err := srv.validateTransaction(ctx, txnParams); err != nil {
-		return nil, apierrors.ErrBadRequest.WithMessage(err.Error())
+		return nil, apperrors.ErrBadRequest.WithMessage(err.Error())
 	}
 	var opType *models.OperationType
 
 	opType, err := srv.validateOpTypes(ctx, txnParams.OpTypeID)
 
 	if err != nil {
-		return nil, apierrors.ErrBadRequest.WithMessage("invalid operation type")
+		return nil, apperrors.ErrBadRequest.WithMessage("invalid operation type")
 	}
 
 	usrAcc, err := srv.accService.GetAccountByID(ctx, txnParams.AccountID)
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "error creating transaction: "+err.Error())
-		return nil, apierrors.ErrInternalServerError.WithMessage("error creating transaction")
+		return nil, apperrors.ErrInternalServerError.WithMessage("error creating transaction")
 	}
 
 	if usrAcc.CreditLimit < txnParams.Amount && opType.OpType != constants.Credit {
 		slog.Log(ctx, slog.LevelError, "insufficient credit")
-		return nil, apierrors.ErrBadRequest.WithMessage("insufficient credit")
+		return nil, apperrors.ErrBadRequest.WithMessage("insufficient credit")
 	}
 
 	newTxn := &dto.CreateTransaction{AccountID: txnParams.AccountID, OpTypeID: txnParams.OpTypeID, Amount: txnParams.Amount * float64(srv.getTxnType(opType.OpType))}
@@ -56,7 +56,7 @@ func (srv *transactionService) CreateTransaction(ctx context.Context, txnParams 
 
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "error creating transaction: "+err.Error())
-		return nil, apierrors.ErrInternalServerError.WithMessage("error creating transaction")
+		return nil, apperrors.ErrInternalServerError.WithMessage("error creating transaction")
 	}
 	return newTxn, nil
 }
@@ -64,7 +64,7 @@ func (srv *transactionService) CreateTransaction(ctx context.Context, txnParams 
 func (srv *transactionService) GetTransactionByID(ctx context.Context, txnID int) (*models.Transaction, error) {
 	txn, err := srv.repo.GetTransactionByID(ctx, txnID)
 	if err != nil {
-		return nil, apierrors.ErrNotFound.WithMessage("transaction not found")
+		return nil, apperrors.ErrNotFound.WithMessage("transaction not found")
 	}
 
 	return txn, nil

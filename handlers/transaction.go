@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
-	apierrors "github.com/sundayezeilo/pismo/errors"
 	"github.com/sundayezeilo/pismo/services"
 	"github.com/sundayezeilo/pismo/validators"
 )
@@ -23,7 +23,7 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 	params := &dto.CreateTxnParams{}
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		apierrors.ErrBadRequest.WithMessage("invalid request payload").WriteJSON(w)
+		apperrors.ErrBadRequest.WithMessage("invalid request payload").WriteJSON(w)
 		return
 	}
 
@@ -37,11 +37,11 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 	txn, err := h.service.CreateTransaction(r.Context(), params)
 
 	if err != nil {
-		if apiErr, ok := err.(*apierrors.APIError); ok {
+		if apiErr, ok := err.(*apperrors.APIError); ok {
 			apiErr.WriteJSON(w)
 		} else {
 			slog.Log(r.Context(), slog.LevelError, "Error creating new transaction")
-			apierrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
+			apperrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
 		}
 		return
 	}

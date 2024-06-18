@@ -1,11 +1,11 @@
 package validators
 
 import (
+	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
-	apierrors "github.com/sundayezeilo/pismo/errors"
 )
 
-func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apierrors.APIError {
+func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apperrors.APIError {
 	var errorList []string
 	if params.AccountID < 1 {
 		errorList = append(errorList, "account_id is required")
@@ -20,7 +20,7 @@ func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apierrors.APIErr
 	}
 
 	if len(errorList) > 0 {
-		apiErr := apierrors.ErrBadRequest.WithError(errorList).WithMessage("invalid request parameters")
+		apiErr := apperrors.ErrBadRequest.WithError(errorList).WithMessage("invalid request parameters")
 		return apiErr
 	}
 	return nil

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
-	apierrors "github.com/sundayezeilo/pismo/errors"
 	"github.com/sundayezeilo/pismo/services"
 	"github.com/sundayezeilo/pismo/validators"
 )
@@ -25,24 +25,24 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	params := &dto.CreateAccountParams{}
 
 	if err := json.NewDecoder(r.Body).Decode(params); err != nil {
-		apierrors.ErrBadRequest.WithMessage("invalid request body").WriteJSON(w)
+		apperrors.ErrBadRequest.WithMessage("invalid request body").WriteJSON(w)
 		return
 	}
 
 	defer r.Body.Close()
 
 	if err := validators.ValidateCreateAccountReq(params.DocumentNumber); err != nil {
-		apierrors.ErrBadRequest.WithMessage(err.Error()).WriteJSON(w)
+		apperrors.ErrBadRequest.WithMessage(err.Error()).WriteJSON(w)
 		return
 	}
 
 	acc, err := h.Service.CreateAccount(r.Context(), params)
 	if err != nil {
-		if apiErr, ok := err.(*apierrors.APIError); ok {
+		if apiErr, ok := err.(*apperrors.APIError); ok {
 			apiErr.WriteJSON(w)
 		} else {
 			slog.Log(r.Context(), slog.LevelError, "Error creating new account")
-			apierrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
+			apperrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
 		}
 		return
 	}
@@ -68,14 +68,14 @@ func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	accID, err := strconv.Atoi(accIDStr)
 
 	if err != nil || accID < 1 {
-		apierrors.ErrBadRequest.WithMessage("invalid account_id").WriteJSON(w)
+		apperrors.ErrBadRequest.WithMessage("invalid account_id").WriteJSON(w)
 		return
 	}
 
 	account, err := h.Service.GetAccountByID(r.Context(), accID)
 
 	if err != nil {
-		apierrors.ErrNotFound.WithMessage("account not found").WriteJSON(w)
+		apperrors.ErrNotFound.WithMessage("account not found").WriteJSON(w)
 		return
 	}
 

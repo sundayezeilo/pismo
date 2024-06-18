@@ -49,7 +49,7 @@ func (r *accountRepository) GetAccountByID(ctx context.Context, accID int) (*mod
 
 func (r *accountRepository) GetAccountByDocumentNumber(ctx context.Context, docNum string) (*models.Account, error) {
 	query := `
-		SELECT * FROM accounts WHERE document_number = $1;
+		SELECT id, document_number, created_at, updated_at FROM accounts WHERE document_number = $1;
 	`
 	acc := &models.Account{}
 	err := r.db.QueryRowContext(ctx, query, docNum).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreatedAt, &acc.UpdatedAt)
