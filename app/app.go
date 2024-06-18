@@ -51,9 +51,9 @@ func NewApp(cfg *config.Config) *App {
 }
 
 func (a *App) setupRoutes() {
-	a.Router.HandleFunc("/accounts", a.AccountHandler.CreateAccount)
-	a.Router.HandleFunc("/accounts/{accountId}", a.AccountHandler.GetAccount)
-	a.Router.HandleFunc("/transactions", a.TransactionHandler.CreateTransaction)
+	a.Router.HandleFunc("POST /accounts", a.AccountHandler.CreateAccount)
+	a.Router.HandleFunc("GET /accounts/{accountId}", a.AccountHandler.GetAccount)
+	a.Router.HandleFunc("POST /transactions", a.TransactionHandler.CreateTransaction)
 }
 
 func (a *App) Cleanup() {

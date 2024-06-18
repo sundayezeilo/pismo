@@ -25,9 +25,9 @@ func (r *accountRepository) CreateAccount(ctx context.Context, acc *models.Accou
 	const query = `
 		INSERT INTO accounts (document_number)
 		VALUES ($1)
-		RETURNING *;
+		RETURNING id, document_number, credit_limit, created_at, updated_at;
 	`
-	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreatedAt, &acc.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreditLimit, &acc.CreatedAt, &acc.UpdatedAt)
 
 	if err != nil {
 		return err
@@ -37,10 +37,10 @@ func (r *accountRepository) CreateAccount(ctx context.Context, acc *models.Accou
 
 func (r *accountRepository) GetAccountByID(ctx context.Context, accID int) (*models.Account, error) {
 	const query = `
-		SELECT * FROM accounts WHERE id = $1;
+		SELECT id, document_number, credit_limit, created_at, updated_at FROM accounts WHERE id = $1;
 	`
 	acc := &models.Account{}
-	err := r.db.QueryRowContext(ctx, query, accID).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreatedAt, &acc.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, accID).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreditLimit, &acc.CreatedAt, &acc.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
