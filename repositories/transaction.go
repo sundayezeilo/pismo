@@ -79,12 +79,12 @@ func (r *txnRepository) CreateTransaction(ctx context.Context, txn *dto.CreateTr
 
 func (r *txnRepository) GetTransactionByID(ctx context.Context, txnID int) (*models.Transaction, error) {
 	const query = `
-		SELECT * FROM transactions
+		SELECT id, account_id, amount, operation_type_id, event_date, created_at, updated_at FROM transactions
 		WHERE id = $1
 	`
 	txn := &models.Transaction{}
 	err := r.db.QueryRowContext(ctx, query, txnID).
-		Scan(&txn.ID, &txn.AccountID, &txn.OpTypeID, &txn.Amount, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt)
+		Scan(&txn.ID, &txn.AccountID, &txn.Amount, &txn.OpTypeID, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt)
 
 	if err != nil {
 		return nil, err
