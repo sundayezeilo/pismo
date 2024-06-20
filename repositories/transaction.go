@@ -26,16 +26,16 @@ func NewTxnRepository(db *sql.DB) TxnRepository {
 
 func (r *txnRepository) CreateTransaction(ctx context.Context, txn *dto.CreateTransaction) error {
 	query := `
-		WITH updated_account AS (
+		WITH inserted_transaction AS (
+				INSERT INTO transactions (account_id, amount, operation_type_id)
+				VALUES ($1, $2, $3)
+				RETURNING id AS transaction_id, account_id, operation_type_id, amount, event_date, created_at, updated_at
+		),
+		updated_account AS (
 				UPDATE accounts
 				SET credit_limit = credit_limit + $2
 				WHERE id = $1
 				RETURNING id AS account_id, credit_limit
-		),
-		inserted_transaction AS (
-				INSERT INTO transactions (account_id, amount, operation_type_id)
-				VALUES ($1, $2, $3)
-				RETURNING id AS transaction_id, account_id, operation_type_id, amount, event_date, created_at, updated_at
 		)
 		SELECT
 				it.transaction_id,
