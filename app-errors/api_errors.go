@@ -13,11 +13,11 @@ type APIError struct {
 	Errors  []string `json:"errors"`
 }
 
-func NewAPIError(code int, message string, errorList []string) *APIError {
+func NewAPIError(code int, message string) *APIError {
 	return &APIError{
 		Code:    code,
 		Message: message,
-		Errors:  errorList,
+		Errors:  []string{},
 	}
 }
 
@@ -53,10 +53,10 @@ func (e *APIError) WriteJSON(w http.ResponseWriter) {
 }
 
 var (
-	ErrBadRequest          = NewAPIError(http.StatusBadRequest, "Bad request", []string{})
-	ErrConflict            = NewAPIError(http.StatusConflict, "Resource already exists", []string{})
-	ErrNotFound            = NewAPIError(http.StatusNotFound, "Resource not found", []string{})
-	ErrInternalServerError = NewAPIError(http.StatusInternalServerError, "Internal server error", []string{})
-	ErrUnauthorized        = NewAPIError(http.StatusUnauthorized, "Unauthorized", []string{})
-	ErrForbidden           = NewAPIError(http.StatusForbidden, "Forbidden", []string{})
+	ErrBadRequest          = NewAPIError(http.StatusBadRequest, "Bad request")
+	ErrConflict            = NewAPIError(http.StatusConflict, "Resource already exists")
+	ErrNotFound            = NewAPIError(http.StatusNotFound, "Resource not found")
+	ErrInternalServerError = NewAPIError(http.StatusInternalServerError, "Internal server error")
+	ErrUnauthorized        = NewAPIError(http.StatusUnauthorized, "Unauthorized")
+	ErrForbidden           = NewAPIError(http.StatusForbidden, "Forbidden")
 )
