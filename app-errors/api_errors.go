@@ -51,12 +51,3 @@ func (e *APIError) WriteJSON(w http.ResponseWriter) {
 	w.WriteHeader(e.Code)
 	json.NewEncoder(w).Encode(resp)
 }
-
-var (
-	ErrBadRequest          = NewAPIError(http.StatusBadRequest, "Bad request")
-	ErrConflict            = NewAPIError(http.StatusConflict, "Resource already exists")
-	ErrNotFound            = NewAPIError(http.StatusNotFound, "Resource not found")
-	ErrInternalServerError = NewAPIError(http.StatusInternalServerError, "Internal server error")
-	ErrUnauthorized        = NewAPIError(http.StatusUnauthorized, "Unauthorized")
-	ErrForbidden           = NewAPIError(http.StatusForbidden, "Forbidden")
-)

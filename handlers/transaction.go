@@ -23,7 +23,7 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 	params := &dto.CreateTxnParams{}
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		apperrors.ErrBadRequest.WithMessage("invalid request payload").WriteJSON(w)
+		apperrors.NewAPIError(http.StatusBadRequest, "invalid request payload").WriteJSON(w)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 			apiErr.WriteJSON(w)
 		} else {
 			slog.Log(r.Context(), slog.LevelError, "Error creating new transaction")
-			apperrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
+			apperrors.NewAPIError(http.StatusInternalServerError, "Unexpected error occurred").WriteJSON(w)
 		}
 		return
 	}

@@ -1,6 +1,8 @@
 package validators
 
 import (
+	"net/http"
+
 	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
 )
@@ -20,7 +22,7 @@ func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apperrors.APIErr
 	}
 
 	if len(errorList) > 0 {
-		apiErr := apperrors.ErrBadRequest.WithError(errorList).WithMessage("invalid request parameters")
+		apiErr := apperrors.NewAPIError(http.StatusBadRequest, "invalid request parameters").WithError(errorList)
 		return apiErr
 	}
 	return nil

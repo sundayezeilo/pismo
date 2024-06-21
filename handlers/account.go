@@ -25,14 +25,14 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	params := &dto.CreateAccountParams{}
 
 	if err := json.NewDecoder(r.Body).Decode(params); err != nil {
-		apperrors.ErrBadRequest.WithMessage("invalid request body").WriteJSON(w)
+		apperrors.NewAPIError(http.StatusBadRequest, "invalid request body").WriteJSON(w)
 		return
 	}
 
 	defer r.Body.Close()
 
 	if err := validators.ValidateCreateAccountReq(params.DocumentNumber); err != nil {
-		apperrors.ErrBadRequest.WithMessage(err.Error()).WriteJSON(w)
+		apperrors.NewAPIError(http.StatusBadRequest, err.Error()).WriteJSON(w)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 			apiErr.WriteJSON(w)
 		} else {
 			slog.Log(r.Context(), slog.LevelError, "Error creating new account")
-			apperrors.ErrInternalServerError.WithMessage("Unexpected error occurred").WriteJSON(w)
+			apperrors.NewAPIError(http.StatusInternalServerError, "Unexpected error occurred").WriteJSON(w)
 		}
 		return
 	}
@@ -68,14 +68,14 @@ func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	accID, err := strconv.Atoi(accIDStr)
 
 	if err != nil || accID < 1 {
-		apperrors.ErrBadRequest.WithMessage("invalid account_id").WriteJSON(w)
+		apperrors.NewAPIError(http.StatusBadRequest, "invalid account_id").WriteJSON(w)
 		return
 	}
 
 	account, err := h.Service.GetAccountByID(r.Context(), accID)
 
 	if err != nil {
-		apperrors.ErrNotFound.WithMessage("account not found").WriteJSON(w)
+		apperrors.NewAPIError(http.StatusBadRequest, "account not found").WriteJSON(w)
 		return
 	}
 

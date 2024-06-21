@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
@@ -27,7 +28,7 @@ func NewAccountService(repo repositories.AccountRepository) AccountService {
 func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountParams) (*models.Account, error) {
 	_, err := srv.repo.GetAccountByDocumentNumber(ctx, params.DocumentNumber)
 	if err == nil {
-		apiErr := apperrors.ErrConflict.WithMessage(fmt.Sprintf("account with %v already exists", params.DocumentNumber))
+		apiErr := apperrors.NewAPIError(http.StatusConflict, fmt.Sprintf("account with %v already exists", params.DocumentNumber))
 		return nil, apiErr
 	}
 	newAcc := &models.Account{DocumentNumber: params.DocumentNumber}
@@ -35,7 +36,7 @@ func (srv *accountService) CreateAccount(ctx context.Context, params *dto.Create
 
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "error creating new account: "+err.Error())
-		return nil, apperrors.ErrInternalServerError.WithMessage("error creating new account")
+		return nil, apperrors.NewAPIError(http.StatusInternalServerError, "error creating new account")
 	}
 	return newAcc, nil
 }
@@ -44,7 +45,7 @@ func (srv *accountService) GetAccountByID(ctx context.Context, accID int) (*mode
 	acc, err := srv.repo.GetAccountByID(ctx, accID)
 
 	if err != nil {
-		apiErr := apperrors.ErrNotFound.WithMessage(fmt.Sprintf("no account found with ID: %v", accID))
+		apiErr := apperrors.NewAPIError(http.StatusNotFound, fmt.Sprintf("no account found with ID: %v", accID))
 		return nil, apiErr
 	}
 	return acc, nil
