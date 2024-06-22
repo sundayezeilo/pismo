@@ -17,9 +17,9 @@ func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apperrors.APIErr
 		errorList = append(errorList, "operation_type_id is required")
 	}
 
-	if params.Amount <= 0 {
-		errorList = append(errorList, "amount be greater than 0")
-	}
+	// if params.Amount <= 0 {
+	// 	errorList = append(errorList, "amount be greater than 0")
+	// }
 
 	if len(errorList) > 0 {
 		apiErr := apperrors.NewAPIError(http.StatusBadRequest, "invalid request parameters").WithError(errorList)

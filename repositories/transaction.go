@@ -3,8 +3,6 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"log/slog"
 
 	"github.com/sundayezeilo/pismo/models"
 
@@ -51,30 +49,9 @@ func (r *txnRepository) CreateTransaction(ctx context.Context, txn *dto.CreateTr
 				inserted_transaction it ON ua.account_id = it.account_id;
 	`
 
-	tx, err := r.db.Begin()
-	if err != nil {
-		return fmt.Errorf("unable to start transaction: %v", err)
-	}
+	err := r.db.QueryRowContext(ctx, query, txn.AccountID, txn.Amount, txn.OpTypeID).Scan(&txn.TransactionID, &txn.OpTypeID, &txn.Amount, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt, &txn.CreditLimit)
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			slog.Log(ctx, slog.LevelError, "transaction rollback")
-			return
-		}
-	}()
-
-	err = tx.QueryRowContext(ctx, query, txn.AccountID, txn.Amount, txn.OpTypeID).Scan(&txn.TransactionID, &txn.OpTypeID, &txn.Amount, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt, &txn.CreditLimit)
-
-	if err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %v", err)
-	}
-
-	return nil
+	return err
 }
 
 func (r *txnRepository) GetTransactionByID(ctx context.Context, txnID int) (*models.Transaction, error) {
