@@ -13,7 +13,7 @@ import (
 )
 
 type AccountService interface {
-	CreateAccount(context.Context, *dto.CreateAccountParams) (*models.Account, error)
+	CreateAccount(context.Context, *dto.CreateAccountRequest) (*models.Account, error)
 	GetAccountByID(context.Context, int) (*models.Account, error)
 }
 
@@ -25,7 +25,7 @@ func NewAccountService(repo repositories.AccountRepository) AccountService {
 	return &accountService{repo}
 }
 
-func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountParams) (*models.Account, error) {
+func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountRequest) (*models.Account, error) {
 	_, err := srv.repo.GetAccountByDocumentNumber(ctx, params.DocumentNumber)
 	if err == nil {
 		apiErr := apperrors.NewAPIError(http.StatusConflict, fmt.Sprintf("account with %v already exists", params.DocumentNumber))

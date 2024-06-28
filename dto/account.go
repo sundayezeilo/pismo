@@ -1,6 +1,6 @@
 package dto
 
-type CreateAccountParams struct {
+type CreateAccountRequest struct {
 	DocumentNumber string `json:"document_number"`
 }
 

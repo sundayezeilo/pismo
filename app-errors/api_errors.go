@@ -22,19 +22,13 @@ func NewAPIError(code int, message string) *APIError {
 }
 
 func (e *APIError) WithMessage(message string) *APIError {
-	return &APIError{
-		Code:    e.Code,
-		Message: message,
-		Errors:  e.Errors,
-	}
+	e.Message = message
+	return e
 }
 
 func (e *APIError) WithError(errorList []string) *APIError {
-	return &APIError{
-		Code:    e.Code,
-		Message: e.Message,
-		Errors:  errorList,
-	}
+	e.Errors = errorList
+	return e
 }
 
 func (e *APIError) Error() string {

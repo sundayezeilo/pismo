@@ -22,7 +22,7 @@ func NewAccountHandler(service services.AccountService) *AccountHandler {
 }
 
 func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	params := &dto.CreateAccountParams{}
+	params := &dto.CreateAccountRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(params); err != nil {
 		apperrors.NewAPIError(http.StatusBadRequest, "invalid request body").WriteJSON(w)
