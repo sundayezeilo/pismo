@@ -30,7 +30,7 @@ type accountResponse struct {
 	DocumentNumber string    `json:"document_number"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-	CreditLimit    float64   `json:"credit_limit"`
+	Balance        float64   `json:"balance"`
 }
 
 func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountRequest) (accountResponse, error) {
@@ -55,7 +55,7 @@ func (srv *accountService) CreateAccount(ctx context.Context, params *dto.Create
 		DocumentNumber: newAcc.DocumentNumber,
 		CreatedAt:      newAcc.CreatedAt,
 		UpdatedAt:      newAcc.UpdatedAt,
-		CreditLimit:    newAcc.CreditLimit,
+		Balance:        newAcc.Balance,
 	}
 
 	return resp, nil
@@ -74,7 +74,7 @@ func (srv *accountService) GetAccountByID(ctx context.Context, accID int) (accou
 		DocumentNumber: acc.DocumentNumber,
 		CreatedAt:      acc.CreatedAt,
 		UpdatedAt:      acc.UpdatedAt,
-		CreditLimit:    acc.CreditLimit,
+		Balance:        acc.Balance,
 	}
 
 	return resp, nil

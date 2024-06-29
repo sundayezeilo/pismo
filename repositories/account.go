@@ -29,20 +29,20 @@ func (r *accountRepository) CreateAccount(ctx context.Context, acc *CreateAccoun
 	const query = `
 		INSERT INTO accounts (document_number)
 		VALUES ($1)
-		RETURNING id, document_number, credit_limit, created_at, updated_at;
+		RETURNING id, document_number, balance, created_at, updated_at;
 	`
 	newAcc := models.Account{}
-	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&newAcc.ID, &newAcc.DocumentNumber, &newAcc.CreditLimit, &newAcc.CreatedAt, &newAcc.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&newAcc.ID, &newAcc.DocumentNumber, &newAcc.Balance, &newAcc.CreatedAt, &newAcc.UpdatedAt)
 
 	return newAcc, err
 }
 
 func (r *accountRepository) GetAccountByID(ctx context.Context, accID int) (models.Account, error) {
 	const query = `
-		SELECT id, document_number, credit_limit, created_at, updated_at FROM accounts WHERE id = $1;
+		SELECT id, document_number, balance, created_at, updated_at FROM accounts WHERE id = $1;
 	`
 	acc := models.Account{}
-	err := r.db.QueryRowContext(ctx, query, accID).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreditLimit, &acc.CreatedAt, &acc.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, accID).Scan(&acc.ID, &acc.DocumentNumber, &acc.Balance, &acc.CreatedAt, &acc.UpdatedAt)
 	return acc, err
 }
 
@@ -51,7 +51,7 @@ func (r *accountRepository) GetAccountByDocumentNumber(ctx context.Context, docN
 		SELECT id, document_number, created_at, updated_at FROM accounts WHERE document_number = $1;
 	`
 	acc := models.Account{}
-	err := r.db.QueryRowContext(ctx, query, docNum).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreatedAt, &acc.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, docNum).Scan(&acc.ID, &acc.DocumentNumber, &acc.Balance, &acc.CreatedAt, &acc.UpdatedAt)
 
 	return acc, err
 }

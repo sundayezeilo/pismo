@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"time"
 
 	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
@@ -19,8 +20,18 @@ func NewTransactionHandler(service services.TransactionService) *TransactionHand
 	return &TransactionHandler{service}
 }
 
+type CreateTxnResponse struct {
+	TransactionID int       `json:"transaction_id"`
+	AccountID     int       `json:"account_id"`
+	OpTypeID      int       `json:"operation_type_id"`
+	Amount        float64   `json:"amount"`
+	EventDate     time.Time `json:"event_date"`
+	BalanceBefore float64   `json:"balance_before"`
+	BalanceAfter  float64   `json:"balance_after"`
+}
+
 func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
-	params := &dto.CreateTxnParams{}
+	params := &dto.CreateTxnRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		apperrors.NewAPIError(http.StatusBadRequest, "invalid request payload").WriteJSON(w)
@@ -46,13 +57,14 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	newTx := dto.CreateTxnResponse{
+	newTx := CreateTxnResponse{
 		TransactionID: txn.TransactionID,
 		AccountID:     txn.AccountID,
 		OpTypeID:      txn.OpTypeID,
 		Amount:        txn.Amount,
 		EventDate:     txn.EventDate,
-		CreditLimit:   txn.CreditLimit,
+		BalanceBefore: txn.BalanceBefore,
+		BalanceAfter:  txn.BalanceAfter,
 	}
 
 	resp := dto.SuccessResponse{

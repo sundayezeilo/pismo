@@ -47,10 +47,10 @@ paths:
                       document_number:
                         type: string
                         description: Unique document number used associated with the new account.
-                      credit_limit:
+                      balance:
                         type: integer
                         format: double
-                        description: Available credit for the account
+                        description: Available balance for the account
         "400":
           description: Bad request. Returned on request validation failure.
           content:
@@ -142,10 +142,10 @@ paths:
                       document_number:
                         type: string
                         description: Unique document number used associated with the new account.
-                      credit_limit:
+                      balance:
                         type: integer
                         format: double
-                        description: Available credit for the account
+                        description: Available balance for the account
         "404":
           description: Account Not found 
           content:
@@ -243,10 +243,14 @@ paths:
                         type: string
                         format: date-time
                         description: Transaction event date.
-                      credit_limit:
+                      balance_before:
                         type: integer
                         format: double
-                        description: Available credit for the account                      
+                        description: Available balance before the transaction.
+                      balance_after:
+                        type: integer
+                        format: double
+                        description: Available balance after the transaction.
         "400":
           description: Bad request. Returned on request validation failure.
           content:

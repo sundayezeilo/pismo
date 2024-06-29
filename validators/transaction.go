@@ -7,7 +7,7 @@ import (
 	"github.com/sundayezeilo/pismo/dto"
 )
 
-func ValidateCreateTransactionReq(params *dto.CreateTxnParams) *apperrors.APIError {
+func ValidateCreateTransactionReq(params *dto.CreateTxnRequest) *apperrors.APIError {
 	var errorList []string
 	if params.AccountID < 1 {
 		errorList = append(errorList, "account_id is required")

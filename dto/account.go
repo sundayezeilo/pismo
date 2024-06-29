@@ -7,5 +7,5 @@ type CreateAccountRequest struct {
 type CreateGetAccountResponse struct {
 	AccountID      int     `json:"account_id"`
 	DocumentNumber string  `json:"document_number"`
-	CreditLimit    float64 `json:"credit_limit"`
+	Balance    float64 `json:"balance"`
 }

@@ -5,12 +5,10 @@ import (
 	"database/sql"
 
 	"github.com/sundayezeilo/pismo/models"
-
-	"github.com/sundayezeilo/pismo/dto"
 )
 
 type TxnRepository interface {
-	CreateTransaction(context.Context, *dto.CreateTransaction) error
+	CreateTransaction(context.Context, *CreateTransactionParams) (models.Transaction, error)
 	GetTransactionByID(context.Context, int) (*models.Transaction, error)
 }
 
@@ -22,36 +20,59 @@ func NewTxnRepository(db *sql.DB) TxnRepository {
 	return &txnRepository{db}
 }
 
-func (r *txnRepository) CreateTransaction(ctx context.Context, txn *dto.CreateTransaction) error {
+type CreateTransactionParams struct {
+	AccountID int     `json:"account_id"`
+	OpTypeID  int     `json:"operation_type_id"`
+	Amount    float64 `json:"amount"`
+}
+
+func (r *txnRepository) CreateTransaction(ctx context.Context, txn *CreateTransactionParams) (models.Transaction, error) {
 	query := `
-		WITH inserted_transaction AS (
-				INSERT INTO transactions (account_id, amount, operation_type_id)
-				VALUES ($1, $2, $3)
-				RETURNING id AS transaction_id, account_id, operation_type_id, amount, event_date, created_at, updated_at
+		WITH account_balance AS (
+				SELECT balance
+				FROM accounts
+				WHERE id = $1
+		),
+		inserted_transaction AS (
+				INSERT INTO transactions (account_id, amount, operation_type_id, balance_before, balance_after)
+				VALUES ($1, $2, $3, (SELECT balance FROM account_balance), (SELECT balance FROM account_balance) + $2)
+				RETURNING id AS transaction_id, account_id, operation_type_id, amount, event_date, balance_before, balance_after, created_at, updated_at
 		),
 		updated_account AS (
 				UPDATE accounts
-				SET credit_limit = credit_limit + $2
+				SET balance = balance + $2
 				WHERE id = $1
-				RETURNING id AS account_id, credit_limit
+				RETURNING id AS account_id, balance AS updated_balance
 		)
 		SELECT
 				it.transaction_id,
+				it.account_id,
 				it.operation_type_id,
 				it.amount,
 				it.event_date,
+				it.balance_before,
+				it.balance_after,
 				it.created_at,
-				it.updated_at,
-				ua.credit_limit
+				it.updated_at
 		FROM
 				updated_account ua
 		JOIN
 				inserted_transaction it ON ua.account_id = it.account_id;
 	`
+	newTxn := models.Transaction{}
+	err := r.db.QueryRowContext(ctx, query, txn.AccountID, txn.Amount, txn.OpTypeID).Scan(
+		&newTxn.ID,
+		&newTxn.AccountID,
+		&newTxn.OpTypeID,
+		&newTxn.Amount,
+		&newTxn.EventDate,
+		&newTxn.BalanceBefore,
+		&newTxn.BalanceAfter,
+		&newTxn.CreatedAt,
+		&newTxn.UpdatedAt,
+	)
 
-	err := r.db.QueryRowContext(ctx, query, txn.AccountID, txn.Amount, txn.OpTypeID).Scan(&txn.TransactionID, &txn.OpTypeID, &txn.Amount, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt, &txn.CreditLimit)
-
-	return err
+	return newTxn, err
 }
 
 func (r *txnRepository) GetTransactionByID(ctx context.Context, txnID int) (*models.Transaction, error) {
@@ -60,9 +81,17 @@ func (r *txnRepository) GetTransactionByID(ctx context.Context, txnID int) (*mod
 		WHERE id = $1
 	`
 	txn := &models.Transaction{}
-	err := r.db.QueryRowContext(ctx, query, txnID).
-		Scan(&txn.ID, &txn.AccountID, &txn.Amount, &txn.OpTypeID, &txn.EventDate, &txn.CreatedAt, &txn.UpdatedAt)
-
+	err := r.db.QueryRowContext(ctx, query, txn.AccountID, txn.Amount, txn.OpTypeID).Scan(
+		&txn.ID,
+		&txn.AccountID,
+		&txn.OpTypeID,
+		&txn.Amount,
+		&txn.EventDate,
+		&txn.BalanceBefore,
+		&txn.BalanceAfter,
+		&txn.CreatedAt,
+		&txn.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
