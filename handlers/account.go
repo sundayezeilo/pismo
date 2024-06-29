@@ -82,7 +82,7 @@ func (h *AccountHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	acc := dto.CreateGetAccountResponse{
 		AccountID:      account.ID,
 		DocumentNumber: account.DocumentNumber,
-		Balance:    account.Balance,
+		Balance:        account.Balance,
 	}
 
 	resp := dto.SuccessResponse{
