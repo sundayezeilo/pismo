@@ -8,9 +8,9 @@ import (
 )
 
 type AccountRepository interface {
-	CreateAccount(context.Context, *models.Account) error
-	GetAccountByID(context.Context, int) (*models.Account, error)
-	GetAccountByDocumentNumber(context.Context, string) (*models.Account, error)
+	CreateAccount(context.Context, *CreateAccountParams) (models.Account, error)
+	GetAccountByID(context.Context, int) (models.Account, error)
+	GetAccountByDocumentNumber(context.Context, string) (models.Account, error)
 }
 
 type accountRepository struct {
@@ -21,42 +21,37 @@ func NewAccountRepository(db *sql.DB) AccountRepository {
 	return &accountRepository{db}
 }
 
-func (r *accountRepository) CreateAccount(ctx context.Context, acc *models.Account) error {
+type CreateAccountParams struct {
+	DocumentNumber string `json:"document_number"`
+}
+
+func (r *accountRepository) CreateAccount(ctx context.Context, acc *CreateAccountParams) (models.Account, error) {
 	const query = `
 		INSERT INTO accounts (document_number)
 		VALUES ($1)
 		RETURNING id, document_number, credit_limit, created_at, updated_at;
 	`
-	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreditLimit, &acc.CreatedAt, &acc.UpdatedAt)
+	newAcc := models.Account{}
+	err := r.db.QueryRowContext(ctx, query, acc.DocumentNumber).Scan(&newAcc.ID, &newAcc.DocumentNumber, &newAcc.CreditLimit, &newAcc.CreatedAt, &newAcc.UpdatedAt)
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return newAcc, err
 }
 
-func (r *accountRepository) GetAccountByID(ctx context.Context, accID int) (*models.Account, error) {
+func (r *accountRepository) GetAccountByID(ctx context.Context, accID int) (models.Account, error) {
 	const query = `
 		SELECT id, document_number, credit_limit, created_at, updated_at FROM accounts WHERE id = $1;
 	`
-	acc := &models.Account{}
+	acc := models.Account{}
 	err := r.db.QueryRowContext(ctx, query, accID).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreditLimit, &acc.CreatedAt, &acc.UpdatedAt)
-	if err != nil {
-		return nil, err
-	}
-	return acc, nil
+	return acc, err
 }
 
-func (r *accountRepository) GetAccountByDocumentNumber(ctx context.Context, docNum string) (*models.Account, error) {
+func (r *accountRepository) GetAccountByDocumentNumber(ctx context.Context, docNum string) (models.Account, error) {
 	query := `
 		SELECT id, document_number, created_at, updated_at FROM accounts WHERE document_number = $1;
 	`
-	acc := &models.Account{}
+	acc := models.Account{}
 	err := r.db.QueryRowContext(ctx, query, docNum).Scan(&acc.ID, &acc.DocumentNumber, &acc.CreatedAt, &acc.UpdatedAt)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return acc, nil
+	return acc, err
 }

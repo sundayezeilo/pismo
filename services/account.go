@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	apperrors "github.com/sundayezeilo/pismo/app-errors"
 	"github.com/sundayezeilo/pismo/dto"
-	"github.com/sundayezeilo/pismo/models"
 	"github.com/sundayezeilo/pismo/repositories"
 )
 
 type AccountService interface {
-	CreateAccount(context.Context, *dto.CreateAccountRequest) (*models.Account, error)
-	GetAccountByID(context.Context, int) (*models.Account, error)
+	CreateAccount(context.Context, *dto.CreateAccountRequest) (accountResponse, error)
+	GetAccountByID(context.Context, int) (accountResponse, error)
 }
 
 type accountService struct {
@@ -25,28 +25,57 @@ func NewAccountService(repo repositories.AccountRepository) AccountService {
 	return &accountService{repo}
 }
 
-func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountRequest) (*models.Account, error) {
+type accountResponse struct {
+	ID             int       `json:"id"`
+	DocumentNumber string    `json:"document_number"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	CreditLimit    float64   `json:"credit_limit"`
+}
+
+func (srv *accountService) CreateAccount(ctx context.Context, params *dto.CreateAccountRequest) (accountResponse, error) {
+	resp := accountResponse{}
 	_, err := srv.repo.GetAccountByDocumentNumber(ctx, params.DocumentNumber)
+
 	if err == nil {
 		apiErr := apperrors.NewAPIError(http.StatusConflict, fmt.Sprintf("account with %v already exists", params.DocumentNumber))
-		return nil, apiErr
+		return resp, apiErr
 	}
-	newAcc := &models.Account{DocumentNumber: params.DocumentNumber}
-	err = srv.repo.CreateAccount(ctx, newAcc)
+
+	acc := &repositories.CreateAccountParams{DocumentNumber: params.DocumentNumber}
+	newAcc, err := srv.repo.CreateAccount(ctx, acc)
 
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "error creating new account: "+err.Error())
-		return nil, apperrors.NewAPIError(http.StatusInternalServerError, "error creating new account")
+		return resp, apperrors.NewAPIError(http.StatusInternalServerError, "error creating new account")
 	}
-	return newAcc, nil
+
+	resp = accountResponse{
+		ID:             newAcc.ID,
+		DocumentNumber: newAcc.DocumentNumber,
+		CreatedAt:      newAcc.CreatedAt,
+		UpdatedAt:      newAcc.UpdatedAt,
+		CreditLimit:    newAcc.CreditLimit,
+	}
+
+	return resp, nil
 }
 
-func (srv *accountService) GetAccountByID(ctx context.Context, accID int) (*models.Account, error) {
+func (srv *accountService) GetAccountByID(ctx context.Context, accID int) (accountResponse, error) {
+	resp := accountResponse{}
 	acc, err := srv.repo.GetAccountByID(ctx, accID)
 
 	if err != nil {
 		apiErr := apperrors.NewAPIError(http.StatusNotFound, fmt.Sprintf("no account found with ID: %v", accID))
-		return nil, apiErr
+		return resp, apiErr
 	}
-	return acc, nil
+	resp = accountResponse{
+		ID:             acc.ID,
+		DocumentNumber: acc.DocumentNumber,
+		CreatedAt:      acc.CreatedAt,
+		UpdatedAt:      acc.UpdatedAt,
+		CreditLimit:    acc.CreditLimit,
+	}
+
+	return resp, nil
 }
